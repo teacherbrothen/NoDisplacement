@@ -14,17 +14,17 @@
         }
 
         body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #f8fafc;
-    color: #1e293b;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 98vh;
-    margin: 0;
-    padding: 20px 20px 0 20px;
-}
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 98vh;
+            margin: 0;
+            padding: 20px 20px 0 20px;
+        }
 
         .container {
             background-color: #ffffff;
@@ -34,6 +34,20 @@
             text-align: center;
             max-width: 760px;
             width: 100%;
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        .sim-id-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: #94a3b8;
+            background-color: #f8fafc;
+            padding: 4px 10px;
+            border-radius: 6px;
             border: 1px solid #e2e8f0;
         }
 
@@ -311,6 +325,7 @@
         }
     </style>
 </head><body><div class="container">
+<div id="sim-id" class="sim-id-badge"></div>
 <h2>Kinematics Equation Solver</h2>
 <div id="setup-screen">
 <p class="instructions">Choose a variable to isolate from the baseline kinematics equation.</p>
@@ -328,7 +343,21 @@
 <div id="feedback"></div>
 <button class="reset-btn" onclick="resetSim()">Start Over</button></div>
 </div>
-<p><script>
+<script>
+    // Custom ID Generator Function
+    function generateSimID() {
+        const d = new Date();
+        const random4 = Math.floor(1000 + Math.random() * 9000);
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const yearLastDigit = String(d.getFullYear()).slice(-1);
+
+        return `${random4}${month}${day}${yearLastDigit}`;
+    }
+
+    // Display ID badge on page load
+    document.getElementById('sim-id').innerText = "ID: " + generateSimID();
+
     let state = 0; 
     let targetVar = null; 
     let currentFocus = null;
@@ -577,4 +606,4 @@
     }
 
     initLabels();
-</script></p></body></html>
+</script></body></html>
