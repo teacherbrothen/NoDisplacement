@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kinematics Algebra Playground - Equation 2</title>
+    <title>Kinematics Algebra Playground - Equation 1</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
@@ -321,7 +321,7 @@
             </div>
         </div>
 
-        <p id="instruction-text" class="instructions">Click any term, factor, or parenthesis to explore mathematically valid operations on both sides.</p>
+        <p id="instruction-text" class="instructions">Click any term or factor to explore mathematically valid operations on both sides.</p>
         
         <div id="isolation-banner-slot"></div>
         <div id="equation-container" class="equation-box"></div>
@@ -347,151 +347,168 @@
         const kRender = (tex) => katex.renderToString(tex, { throwOnError: false, displayMode: false });
 
         /*
-            PLAYGROUND STATE GRAPH: d = ((v1 + v2)/2) * t
+            PLAYGROUND STATE GRAPH: v_f = v_i + at
         */
         const STATES = {
-			'init': {
-			    isolated: null,
-			    infoType: null,
-			    render: (sel) => `
-			        <div class="side">
-			            <span class="clickable-block ${sel === 'd' ? 'selected' : ''}" onclick="selectItem('d')">${kRender('d')}</span>
-			        </div>
-			        <span class="equals">=</span>
-			        <div class="side">
-			            <span class="clickable-block ${sel === 'fraction_group' ? 'selected' : ''}" onclick="selectItem('fraction_group')">${kRender('\\left(\\frac{v_1 + v_2}{2}\\right)')}</span>
-			            <span class="clickable-block ${sel === 't' ? 'selected' : ''}" onclick="selectItem('t')">${kRender('t')}</span>
-			        </div>`,
-			    actions: {
-			        'd': [
-			            { label: `Subtract ${kRender('d')} from both sides`, next: 'zero_form', desc: 'Subtracted d from both sides' }
-			        ],
-			        'fraction_group': [
-			            { label: `Multiply both sides by ${kRender('2')} (clears denominator)`, next: 'mult_2_init', desc: 'Multiplied both sides by 2' }
-			        ],
-			        't': [
-			            { label: `Divide both sides by ${kRender('t')}`, next: 'div_t_init', desc: 'Divided both sides by t' },
-			            { label: `Multiply both sides by ${kRender('2')}`, next: 'mult_2_init', desc: 'Multiplied both sides by 2' }
-			        ]
-			    }
-			},
-
-            'div_t_init': {
+            'init': {
                 isolated: null,
-                infoType: 'avg_velocity',
+                infoType: null,
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{d}{t}')}</span>
+                        <span class="clickable-block ${sel === 'vf' ? 'selected' : ''}" onclick="selectItem('vf')">${kRender('v_f')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'rhs' ? 'selected' : ''}" onclick="selectItem('rhs')">${kRender('\\frac{v_1 + v_2}{2}')}</span>
+                        <span class="clickable-block ${sel === 'vi' ? 'selected' : ''}" onclick="selectItem('vi')">${kRender('v_i')}</span>
+                        <span class="sign">+</span>
+                        <span class="clickable-block ${sel === 'at' ? 'selected' : ''}" onclick="selectItem('at')">${kRender('at')}</span>
+                    </div>`,
+                actions: {
+                    'vf': [
+                        { label: `Subtract ${kRender('v_f')} from both sides`, next: 'zero_form', desc: 'Subtracted v_f from both sides' },
+                        { label: `Divide both sides by ${kRender('t')}`, next: 'div_t_init', desc: 'Divided both sides by t' }
+                    ],
+                    'vi': [
+                        { label: `Subtract ${kRender('v_i')} from both sides`, next: 'sub_vi', desc: 'Subtracted v_i from both sides' }
+                    ],
+                    'at': [
+                        { label: `Subtract ${kRender('at')} from both sides (Isolates v_i!)`, next: 'sub_at', desc: 'Subtracted at from both sides' }
+                    ]
+                }
+            },
+
+            'sub_at': {
+                isolated: 'v_i',
+                infoType: null,
+                render: (sel) => `
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('v_f - at')}</span>
+                    </div>
+                    <span class="equals">=</span>
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'vi' ? 'selected' : ''}" onclick="selectItem('vi')">${kRender('v_i')}</span>
                     </div>`,
                 actions: {
                     'lhs': [
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'init', desc: 'Multiplied both sides by t' },
-                        { label: `Multiply both sides by ${kRender('2')}`, next: 'mult_2_div_t', desc: 'Multiplied both sides by 2' }
+                        { label: `Add ${kRender('at')} to both sides`, next: 'init', desc: 'Added at back to both sides' },
+                        { label: `Divide both sides by ${kRender('t')}`, next: 'div_t_sub_at', desc: 'Divided both sides by t' }
+                    ],
+                    'vi': [
+                        { label: `Add ${kRender('at')} to both sides`, next: 'init', desc: 'Added at back to both sides' }
+                    ]
+                }
+            },
+
+            'div_t_sub_at': {
+                isolated: null,
+                infoType: null,
+                render: (sel) => `
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{v_f}{t} - a')}</span>
+                    </div>
+                    <span class="equals">=</span>
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'rhs' ? 'selected' : ''}" onclick="selectItem('rhs')">${kRender('\\frac{v_i}{t}')}</span>
+                    </div>`,
+                actions: {
+                    'lhs': [
+                        { label: `Multiply both sides by ${kRender('t')}`, next: 'sub_at', desc: 'Multiplied both sides by t' },
+                        { label: `Add ${kRender('a')} to both sides`, next: 'div_t_init', desc: 'Added a to both sides' }
                     ],
                     'rhs': [
-                        { label: `Multiply both sides by ${kRender('2')}`, next: 'mult_2_div_t', desc: 'Multiplied both sides by 2' }
+                        { label: `Multiply both sides by ${kRender('t')} (Isolates v_i!)`, next: 'sub_at', desc: 'Multiplied both sides by t' }
                     ]
                 }
             },
 
-            'mult_2_div_t': {
+            'sub_vi': {
+                isolated: null,
+                infoType: 'delta_v',
+                render: (sel) => `
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('v_f - v_i')}</span>
+                    </div>
+                    <span class="equals">=</span>
+                    <div class="side">
+                        <span class="clickable-block ${sel === 'rhs_a' ? 'selected' : ''}" onclick="selectItem('rhs_a')">${kRender('a')}</span>
+                        <span class="clickable-block ${sel === 'rhs_t' ? 'selected' : ''}" onclick="selectItem('rhs_t')">${kRender('t')}</span>
+                    </div>`,
+                actions: {
+                    'lhs': [
+                        { label: `Add ${kRender('v_i')} to both sides`, next: 'init', desc: 'Added v_i back to both sides' },
+                        { label: `Multiply both sides by ${kRender('-1')}`, next: 'vi_minus_vf', desc: 'Multiplied both sides by -1' }
+                    ],
+                    'rhs_a': [
+                        { label: `Divide both sides by ${kRender('a')} (Isolates t!)`, next: 't_isolated', desc: 'Divided both sides by a' }
+                    ],
+                    'rhs_t': [
+                        { label: `Divide both sides by ${kRender('t')} (Isolates a!)`, next: 'a_isolated', desc: 'Divided both sides by t' }
+                    ]
+                }
+            },
+
+            'vi_minus_vf': {
                 isolated: null,
                 infoType: null,
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{2d}{t}')}</span>
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('v_i - v_f')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'v1' ? 'selected' : ''}" onclick="selectItem('v1')">${kRender('v_1')}</span>
-                        <span class="sign">+</span>
-                        <span class="clickable-block ${sel === 'v2' ? 'selected' : ''}" onclick="selectItem('v2')">${kRender('v_2')}</span>
+                        <span class="clickable-block ${sel === 'rhs' ? 'selected' : ''}" onclick="selectItem('rhs')">${kRender('-at')}</span>
                     </div>`,
                 actions: {
                     'lhs': [
-                        { label: `Divide both sides by ${kRender('2')}`, next: 'div_t_init', desc: 'Divided both sides by 2' },
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'mult_2_init', desc: 'Multiplied both sides by t' }
+                        { label: `Multiply both sides by ${kRender('-1')}`, next: 'sub_vi', desc: 'Multiplied both sides by -1' }
                     ],
-                    'v1': [
-                        { label: `Subtract ${kRender('v_1')} from both sides (Isolates v₂!)`, next: 'v2_isolated_alt', desc: 'Subtracted v₁ from both sides' }
-                    ],
-                    'v2': [
-                        { label: `Subtract ${kRender('v_2')} from both sides (Isolates v₁!)`, next: 'v1_isolated_alt', desc: 'Subtracted v₂ from both sides' }
+                    'rhs': [
+                        { label: `Divide both sides by ${kRender('-t')} (Isolates a!)`, next: 'a_isolated', desc: 'Divided both sides by -t' },
+                        { label: `Divide both sides by ${kRender('-a')} (Isolates t!)`, next: 't_isolated', desc: 'Divided both sides by -a' }
                     ]
                 }
             },
 
-            'v1_isolated_alt': {
-                isolated: 'v_1',
-                infoType: null,
+            'a_isolated': {
+                isolated: 'a',
+                infoType: 'def_accel',
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{2d}{t} - v_2')}</span>
+                        <span class="clickable-block ${sel === 'frac' ? 'selected' : ''}" onclick="selectItem('frac')">${kRender('\\frac{v_f - v_i}{t}')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'v1' ? 'selected' : ''}" onclick="selectItem('v1')">${kRender('v_1')}</span>
+                        <span class="clickable-block ${sel === 'a' ? 'selected' : ''}" onclick="selectItem('a')">${kRender('a')}</span>
                     </div>`,
                 actions: {
-                    'lhs': [
-                        { label: `Add ${kRender('v_2')} to both sides`, next: 'mult_2_div_t', desc: 'Added v₂ back to both sides' },
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v1t_isolated', desc: 'Multiplied both sides by t' }
+                    'frac': [
+                        { label: `Multiply both sides by ${kRender('t')}`, next: 'sub_vi', desc: 'Multiplied both sides by t' },
+                        { label: `Split fraction into ${kRender('\\frac{v_f}{t} - \\frac{v_i}{t}')}`, next: 'a_split', desc: 'Split fraction into separate terms' }
                     ],
-                    'v1': [
-                        { label: `Add ${kRender('v_2')} to both sides`, next: 'mult_2_div_t', desc: 'Added v₂ back to both sides' }
+                    'a': [
+                        { label: `Multiply both sides by ${kRender('t')}`, next: 'sub_vi', desc: 'Multiplied both sides by t' }
                     ]
                 }
             },
 
-            'v2_isolated_alt': {
-                isolated: 'v_2',
+            'a_split': {
+                isolated: 'a',
                 infoType: null,
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{2d}{t} - v_1')}</span>
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{v_f}{t} - \\frac{v_i}{t}')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'v2' ? 'selected' : ''}" onclick="selectItem('v2')">${kRender('v_2')}</span>
+                        <span class="clickable-block ${sel === 'a' ? 'selected' : ''}" onclick="selectItem('a')">${kRender('a')}</span>
                     </div>`,
                 actions: {
                     'lhs': [
-                        { label: `Add ${kRender('v_1')} to both sides`, next: 'mult_2_div_t', desc: 'Added v₁ back to both sides' },
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v2t_isolated', desc: 'Multiplied both sides by t' }
+                        { label: `Combine fractions into ${kRender('\\frac{v_f - v_i}{t}')}`, next: 'a_isolated', desc: 'Combined terms over common denominator' },
+                        { label: `Multiply both sides by ${kRender('t')}`, next: 'sub_vi', desc: 'Multiplied both sides by t' }
                     ],
-                    'v2': [
-                        { label: `Add ${kRender('v_1')} to both sides`, next: 'mult_2_div_t', desc: 'Added v₁ back to both sides' }
-                    ]
-                }
-            },
-
-            'mult_2_init': {
-                isolated: null,
-                infoType: null,
-                render: (sel) => `
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('2d')}</span>
-                    </div>
-                    <span class="equals">=</span>
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'v_sum' ? 'selected' : ''}" onclick="selectItem('v_sum')">${kRender('(v_1 + v_2)')}</span>
-                        <span class="clickable-block ${sel === 't' ? 'selected' : ''}" onclick="selectItem('t')">${kRender('t')}</span>
-                    </div>`,
-                actions: {
-                    'lhs': [
-                        { label: `Divide both sides by ${kRender('2')}`, next: 'init', desc: 'Divided both sides by 2' }
-                    ],
-                    'v_sum': [
-                        { label: `Divide both sides by ${kRender('(v_1 + v_2)')} (Isolates t!)`, next: 't_isolated', desc: 'Divided both sides by (v₁ + v₂)' },
-                        { label: `Distribute the ${kRender('t')}`, next: 'mult_2_expanded', desc: 'Distributed t across parenthesis' }
-                    ],
-                    't': [
-                        { label: `Divide both sides by ${kRender('t')}`, next: 'mult_2_div_t', desc: 'Divided both sides by t' },
-                        { label: `Divide both sides by ${kRender('(v_1 + v_2)')} (Isolates t!)`, next: 't_isolated', desc: 'Divided both sides by (v₁ + v₂)' }
+                    'a': [
+                        { label: `Combine fractions into ${kRender('\\frac{v_f - v_i}{t}')}`, next: 'a_isolated', desc: 'Combined terms over common denominator' }
                     ]
                 }
             },
@@ -501,7 +518,7 @@
                 infoType: null,
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'frac' ? 'selected' : ''}" onclick="selectItem('frac')">${kRender('\\frac{2d}{v_1 + v_2}')}</span>
+                        <span class="clickable-block ${sel === 'frac' ? 'selected' : ''}" onclick="selectItem('frac')">${kRender('\\frac{v_f - v_i}{a}')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
@@ -509,130 +526,36 @@
                     </div>`,
                 actions: {
                     'frac': [
-                        { label: `Multiply both sides by ${kRender('(v_1 + v_2)')}`, next: 'mult_2_init', desc: 'Multiplied both sides by (v₁ + v₂)' }
+                        { label: `Multiply both sides by ${kRender('a')}`, next: 'sub_vi', desc: 'Multiplied both sides by a' }
                     ],
                     't': [
-                        { label: `Multiply both sides by ${kRender('(v_1 + v_2)')}`, next: 'mult_2_init', desc: 'Multiplied both sides by (v₁ + v₂)' }
+                        { label: `Multiply both sides by ${kRender('a')}`, next: 'sub_vi', desc: 'Multiplied both sides by a' }
                     ]
                 }
             },
 
-            'mult_2_expanded': {
+            'div_t_init': {
                 isolated: null,
                 infoType: null,
                 render: (sel) => `
                     <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('2d')}</span>
+                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('\\frac{v_f}{t}')}</span>
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'v1t' ? 'selected' : ''}" onclick="selectItem('v1t')">${kRender('v_1 t')}</span>
+                        <span class="clickable-block ${sel === 'vi_t' ? 'selected' : ''}" onclick="selectItem('vi_t')">${kRender('\\frac{v_i}{t}')}</span>
                         <span class="sign">+</span>
-                        <span class="clickable-block ${sel === 'v2t' ? 'selected' : ''}" onclick="selectItem('v2t')">${kRender('v_2 t')}</span>
+                        <span class="clickable-block ${sel === 'a' ? 'selected' : ''}" onclick="selectItem('a')">${kRender('a')}</span>
                     </div>`,
                 actions: {
                     'lhs': [
-                        { label: `Factor out ${kRender('t')}`, next: 'mult_2_init', desc: 'Factored out t' }
+                        { label: `Multiply both sides by ${kRender('t')}`, next: 'init', desc: 'Multiplied both sides by t' }
                     ],
-                    'v1t': [
-                        { label: `Subtract ${kRender('v_1 t')} from both sides`, next: 'v2t_isolated', desc: 'Subtracted v₁t from both sides' }
+                    'vi_t': [
+                        { label: `Subtract ${kRender('\\frac{v_i}{t}')} from both sides (Isolates a!)`, next: 'a_split', desc: 'Subtracted v_i/t from both sides' }
                     ],
-                    'v2t': [
-                        { label: `Subtract ${kRender('v_2 t')} from both sides`, next: 'v1t_isolated', desc: 'Subtracted v₂t from both sides' }
-                    ]
-                }
-            },
-
-            'v1t_isolated': {
-                isolated: null,
-                infoType: null,
-                render: (sel) => `
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('2d - v_2 t')}</span>
-                    </div>
-                    <span class="equals">=</span>
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'v1' ? 'selected' : ''}" onclick="selectItem('v1')">${kRender('v_1')}</span>
-                        <span class="clickable-block ${sel === 't' ? 'selected' : ''}" onclick="selectItem('t')">${kRender('t')}</span>
-                    </div>`,
-                actions: {
-                    'lhs': [
-                        { label: `Add ${kRender('v_2 t')} to both sides`, next: 'mult_2_expanded', desc: 'Added v₂t back to both sides' }
-                    ],
-                    'v1': [
-                        { label: `Divide both sides by ${kRender('t')} (Isolates v₁!)`, next: 'v1_isolated_expanded', desc: 'Divided both sides by t' }
-                    ],
-                    't': [
-                        { label: `Divide both sides by ${kRender('t')} (Isolates v₁!)`, next: 'v1_isolated_expanded', desc: 'Divided both sides by t' }
-                    ]
-                }
-            },
-
-            'v2t_isolated': {
-                isolated: null,
-                infoType: null,
-                render: (sel) => `
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'lhs' ? 'selected' : ''}" onclick="selectItem('lhs')">${kRender('2d - v_1 t')}</span>
-                    </div>
-                    <span class="equals">=</span>
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'v2' ? 'selected' : ''}" onclick="selectItem('v2')">${kRender('v_2')}</span>
-                        <span class="clickable-block ${sel === 't' ? 'selected' : ''}" onclick="selectItem('t')">${kRender('t')}</span>
-                    </div>`,
-                actions: {
-                    'lhs': [
-                        { label: `Add ${kRender('v_1 t')} to both sides`, next: 'mult_2_expanded', desc: 'Added v₁t back to both sides' }
-                    ],
-                    'v2': [
-                        { label: `Divide both sides by ${kRender('t')} (Isolates v₂!)`, next: 'v2_isolated_expanded', desc: 'Divided both sides by t' }
-                    ],
-                    't': [
-                        { label: `Divide both sides by ${kRender('t')} (Isolates v₂!)`, next: 'v2_isolated_expanded', desc: 'Divided both sides by t' }
-                    ]
-                }
-            },
-
-            'v1_isolated_expanded': {
-                isolated: 'v_1',
-                infoType: null,
-                render: (sel) => `
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'frac' ? 'selected' : ''}" onclick="selectItem('frac')">${kRender('\\frac{2d - v_2 t}{t}')}</span>
-                    </div>
-                    <span class="equals">=</span>
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'v1' ? 'selected' : ''}" onclick="selectItem('v1')">${kRender('v_1')}</span>
-                    </div>`,
-                actions: {
-                    'frac': [
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v1t_isolated', desc: 'Multiplied both sides by t' },
-                        { label: `Split fraction into ${kRender('\\frac{2d}{t} - v_2')}`, next: 'v1_isolated_alt', desc: 'Split into separate terms' }
-                    ],
-                    'v1': [
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v1t_isolated', desc: 'Multiplied both sides by t' }
-                    ]
-                }
-            },
-
-            'v2_isolated_expanded': {
-                isolated: 'v_2',
-                infoType: null,
-                render: (sel) => `
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'frac' ? 'selected' : ''}" onclick="selectItem('frac')">${kRender('\\frac{2d - v_1 t}{t}')}</span>
-                    </div>
-                    <span class="equals">=</span>
-                    <div class="side">
-                        <span class="clickable-block ${sel === 'v2' ? 'selected' : ''}" onclick="selectItem('v2')">${kRender('v_2')}</span>
-                    </div>`,
-                actions: {
-                    'frac': [
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v2t_isolated', desc: 'Multiplied both sides by t' },
-                        { label: `Split fraction into ${kRender('\\frac{2d}{t} - v_1')}`, next: 'v2_isolated_alt', desc: 'Split into separate terms' }
-                    ],
-                    'v2': [
-                        { label: `Multiply both sides by ${kRender('t')}`, next: 'v2t_isolated', desc: 'Multiplied both sides by t' }
+                    'a': [
+                        { label: `Subtract ${kRender('a')} from both sides`, next: 'div_t_sub_at', desc: 'Subtracted a from both sides' }
                     ]
                 }
             },
@@ -646,19 +569,24 @@
                     </div>
                     <span class="equals">=</span>
                     <div class="side">
-                        <span class="clickable-block ${sel === 'term' ? 'selected' : ''}" onclick="selectItem('term')">${kRender('\\left(\\frac{v_1 + v_2}{2}\\right)t')}</span>
+                        <span class="clickable-block ${sel === 'vi' ? 'selected' : ''}" onclick="selectItem('vi')">${kRender('v_i')}</span>
+                        <span class="sign">+</span>
+                        <span class="clickable-block ${sel === 'at' ? 'selected' : ''}" onclick="selectItem('at')">${kRender('at')}</span>
                         <span class="sign">-</span>
-                        <span class="clickable-block ${sel === 'd' ? 'selected' : ''}" onclick="selectItem('d')">${kRender('d')}</span>
+                        <span class="clickable-block ${sel === 'vf' ? 'selected' : ''}" onclick="selectItem('vf')">${kRender('v_f')}</span>
                     </div>`,
                 actions: {
                     'zero': [
-                        { label: `Add ${kRender('d')} to both sides`, next: 'init', desc: 'Added d back to left side' }
+                        { label: `Add ${kRender('v_f')} to both sides`, next: 'init', desc: 'Added v_f back to left side' }
                     ],
-                    'd': [
-                        { label: `Add ${kRender('d')} to both sides`, next: 'init', desc: 'Added d back to left side' }
+                    'vf': [
+                        { label: `Add ${kRender('v_f')} to both sides`, next: 'init', desc: 'Added v_f back to left side' }
                     ],
-                    'term': [
-                        { label: `Subtract ${kRender('\\left(\\frac{v_1 + v_2}{2}\\right)t')} (and simplify signs)`, next: 'init', desc: 'Moved term back across' }
+                    'vi': [
+                        { label: `Subtract ${kRender('v_i')} (and simplify signs)`, next: 'sub_vi', desc: 'Moved v_i across: v_f - v_i = at' }
+                    ],
+                    'at': [
+                        { label: `Subtract ${kRender('at')} (and simplify signs)`, next: 'sub_at', desc: 'Moved at across: v_f - at = v_i' }
                     ]
                 }
             }
@@ -686,16 +614,20 @@
                     <div class="banner isolated-banner">
                         <span>🎉</span> Variable ${kRender(state.isolated)} is completely isolated! Feel free to keep manipulating.
                     </div>`;
-				} else if (state.infoType === 'avg_velocity') {
-				    bannerSlot.innerHTML = `
-				        <div class="banner info-banner">
-				            💡 <strong>Average Velocity Connection:</strong> ${kRender('\\frac{d}{t} = v_{\\text{avg}} = \\frac{v_1 + v_2}{2}')} relates displacement rate to average velocity!
-				        </div>`;
-				
+            } else if (state.infoType === 'def_accel') {
+                bannerSlot.innerHTML = `
+                    <div class="banner info-banner">
+                        💡 <strong>Definition of Acceleration:</strong> ${kRender('a = \\frac{v_f - v_i}{t} = \\frac{\\Delta v}{\\Delta t}')} represents rate of velocity change!
+                    </div>`;
+            } else if (state.infoType === 'delta_v') {
+                bannerSlot.innerHTML = `
+                    <div class="banner info-banner">
+                        💡 <strong>Change in Velocity:</strong> ${kRender('v_f - v_i = \\Delta v = at')} shows total velocity gained during acceleration!
+                    </div>`;
             } else if (state.infoType === 'zero_balance') {
                 bannerSlot.innerHTML = `
                     <div class="banner info-banner">
-                        💡 <strong>Zero-Balance State:</strong> Setting displacement to zero balances the total forward and backward travel.
+                        💡 <strong>Zero-Balance State:</strong> Setting the equation to 0 balances initial speed, gain from acceleration, and final speed.
                     </div>`;
             } else {
                 bannerSlot.innerHTML = '';
@@ -706,7 +638,7 @@
                 panel.innerHTML = `
                     <div class="action-label">CHOOSE A PART OF THE EQUATION TO OPERATE ON</div>
                     <p style="font-size: 13px; color: #64748b; text-align: center; margin: 0; line-height: 1.5;">
-                        Click on any term, factor, or parenthesis above to explore mathematically valid operations on both sides.
+                        Click on any term or variable above to explore mathematically valid operations on both sides.
                     </p>`;
             } else {
                 const availableMoves = state.actions[activeSelection];
@@ -763,7 +695,7 @@
 
         function renderHistory() {
             if (historyStack.length === 0) {
-                historyContainer.innerHTML = `<span style="font-size: 11.5px; color: #94a3b8;">Start: d = ((v₁ + v₂)/2)t</span>`;
+                historyContainer.innerHTML = `<span style="font-size: 11.5px; color: #94a3b8;">Start: v_f = v_i + at</span>`;
                 return;
             }
 
